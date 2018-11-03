@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tool email signature generator</title>
+    <meta name="viewport" content="width=device-width" />
+    <script type="text/javascript" src="./underscore.js"></script>
+    <script type="text/javascript">
+
+      let req, template;
+      let outputEl, nameField, titleField, officeField, mobileField;
+
+      window.addEventListener('load', function () {
+        outputEl = document.getElementById('generator-output');
+        nameField = document.getElementById('name');
+        titleField = document.getElementById('title');
+        officeField = document.getElementById('office-phone');
+        mobileField = document.getElementById('mobile-phone');
+
+        // load template html
+        req = new XMLHttpRequest();
+        req.onload = loadedTemplate;
+        req.open("get", "v2-sig.html", true);
+        req.send();
+      });
+
+      function loadedTemplate() {
+        template = _.template(req.responseText);
+        document.body.addEventListener('keyup', function () {
+          renderTemplate(getFieldData());
+        });
+        renderTemplate({})
+      }
+
+      let defaultData = {
+        name: 'firstname lastname',
+        title: 'title of title',
+        office_phone: '310 453 9244',
+        office_phone_url: '3104539244',
+        mobile_phone: '000 000 0000',
+        mobile_phone_url: '0000000000'
+      };
+
+      function renderTemplate(data) {
+        let d = _.defaults(data, defaultData);
+        return outputEl.innerHTML = template(d);
+      }
+
+      function getFieldData() {
+        let name = nameField.value.length !== 0 ? nameField.value : undefined;
+        let title = titleField.value.length !== 0 ? titleField.value : undefined;
+        let office = officeField.value.length !== 0 ? officeField.value : undefined;
+        if(office){
+          office = office.replace(/ /g, '');
+          office = [office.slice(0, 3), office.slice(3, 6), office.slice(6, 10)].join(' ')
+        }
+        let mobile = mobileField.value.length !== 0 ? mobileField.value : undefined;
+        if(mobile){
+          mobile = mobile.replace(/ /g, '');
+          mobile = [mobile.slice(0, 3), mobile.slice(3, 6), mobile.slice(6, 10)].join(' ');
+        }
+
+        return {
+          name: name,
+          title: title,
+          office_phone: office,
+          office_phone_url: getNumbers(officeField.value),
+          mobile_phone: mobile,
+          mobile_phone_url: getNumbers(mobileField.value)
+        }
+      }
+
+      function getNumbers(string) {
+
+        if (typeof string === Number)string = string.toString();
+        else if (string === '' || string === undefined) return '';
+        return string.match(/\d+/g).join('');
+      }
+
+      let slamTimeout;
+      function copyTextToClipboard(text) {
+        console.log('copyTextToClipboard', text);
+        let textArea = document.createElement("textarea");
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+          let successful = document.execCommand('copy');
+          let msg = successful ? 'successful' : 'unsuccessful';
+        } catch (err) {
+          console.log('Oops, unable to copy')
+        }
+        document.body.removeChild(textArea);
+
+        let copied = document.querySelector('.copied');
+        copied.classList.remove('slam');
+        copied.classList.add('slam');
+        clearTimeout(slamTimeout);
+        slamTimeout = setTimeout(function(){
+          copied.classList.remove('slam');
+        }, 2000)
+      }
+    // 103 7 21
+    </script>
+
+    <link href='https://fonts.googleapis.com/css?family=Droid+Sans+Mono' rel='stylesheet' type='text/css'>
+    <link href="https://fonts.googleapis.com/css?family=Work+Sans:300,400,500,600,700" rel="stylesheet">
+
+    <style type="text/css">
+
+        body, html {
+            font-family: Droid Sans Mono, sans-serif;
+            margin: 1em;
+            letter-spacing: -1px;
+        }
+
+        @media (max-width: 768px) {
+            body, html {
+                margin: 0;
+            }
+        }
+
+        #generator-output{
+            letter-spacing: 0;
+
+        }
+
+        .mobile{
+            display: none;
+        }
+        .desktop{
+            display: block;
+        }
+
+        @media handheld, screen and (max-width: 780px){
+            .mobile{
+                display: block;
+            }
+            .desktop{
+                display: none;
+            }
+        }
+
+        .input span {
+            text-transform: uppercase;
+            font-size: .7em;
+        }
+
+        .no-select {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .copy-block {
+            display: inline-block;
+        }
+
+        .copy-btn {
+            position: relative;
+            z-index: 1;
+            float: left;
+            background: black;
+            display: inline-block;
+            text-align: center;
+            padding: 10px 20px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .copied {
+            float: left;
+            padding: 10px 20px;
+            font-weight: bold;
+            z-index: -1;
+            transform: translateX(-100%);
+        }
+        .copied.slam {
+            animation: slam-anim 2s ease-in-out;
+        }
+
+        @keyframes slam-anim {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            10% {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(-100%);
+            }
+        }
+
+        .step-content {
+            margin-left: 72px;
+            margin-bottom: 50px;
+        }
+
+        @media (max-width: 768px) {
+            .step-content {
+                margin-left: 0;
+            }
+        }
+
+        .step-two {
+            /*margin-bottom: -10px;*/
+        }
+
+        .welcome {
+            margin-bottom: 50px;
+        }
+
+        .red {
+            color: rgb(103, 7, 21);
+        }
+
+        .bold {
+            font-weight: bold;
+        }
+    </style>
+
+</head>
+<body>
+
+<h3 class="welcome no-select">Welcome to the OFFICIAL TOOL EMAIL SIGNATURE GENERATOR.</h3>
+<h4 class="no-select">Step 1: Fill out this form as professionally as you can.</h4>
+
+<form class="no-select step-content">
+    <div class="input">
+        <input id="name" >
+        <span class="no-select">name</span>
+    </div>
+    <div class="input">
+        <input id="title">
+        <span class="no-select">title</span>
+    </div>
+    <div class="input" type="tel">
+        <input id="office-phone" value="310 453 9244">
+        <span class="no-select">office phone</span>
+    </div>
+    <div class="input">
+        <input id="mobile-phone" type="tel">
+        <span class="no-select">mobile phone</span>
+    </div>
+</form>
+
+<!-- <h4 class="no-select step-two">Step 2: Check it out.</h4> -->
+<h4 class="no-select desktop">Step 2: Click &amp; drag your mouse from 'here' to 'there'. </h4>
+<h4 class="no-select mobile">Step 2: Long press your name and select all from 'here' to 'there'. </h4>
+
+<div class="copy-block step-content">
+    <div class="no-select">here----------------</div>
+    <div id="generator-output"></div>
+    <div class="no-select">----------------there</div>
+</div>
+<!-- <h4 class="no-select">Step 3: Gently click the button to copy the signature to your clipboard.</h4>
+
+<div class="copy-block step-content">
+	<div class="copy-btn">COPY TO CLIPBOARD</div>
+	<div class="copied">COPIED!</div>
+</div> -->
+
+<!-- <h4 class="no-select">Step 4: Paste the contents into your mail client's signature box.</h4> -->
+<h4 class="no-select">Step 3: Copy and paste the contents into your mail client.</h4>
+<h4 class= "no-select step-content"> Note: In Apple Mail, uncheck "Always match my default message font" before you paste.</h4>
+<h4 class="no-select">Step 4: Profit!</h4>
+
+</body>
+</html>
